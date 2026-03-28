@@ -1,16 +1,16 @@
 import streamlit as st
 import requests
 
-st.title("📚 Book Price Prediction System")
+st.title("📚 Book Price Prediction")
 
-st.write("Enter book details:")
-
-# All inputs (UX purpose)
+# Inputs
 title = st.text_input("Book Title")
-author = st.text_input("Author Name")
+author = st.text_input("Author")
+
 rating = st.slider("Rating", 0.0, 5.0, 3.5)
-popularity = st.number_input("Popularity (Rating × Reviews)", min_value=0.0, value=100.0)
+
 pages = st.number_input("Pages", min_value=1, value=200)
+popularity = st.number_input("Popularity", min_value=0.0, value=100.0)
 
 # Predict
 if st.button("Predict Price"):
@@ -23,12 +23,17 @@ if st.button("Predict Price"):
         "pages": pages
     }
 
-    response = requests.post("http://127.0.0.1:8000/predict", json=data)
+    try:
+        response = requests.post(
+            "https://books-pp.onrender.com/predict",
+            json=data
+        )
 
-    if response.status_code == 200:
-        result = response.json()
+        if response.status_code == 200:
+            result = response.json()
+            st.success(f"💰 Predicted Price: ₹{result['predicted_price']}")
+        else:
+            st.error("Backend error")
 
-        st.success(f"💰 Predicted Price: ₹{result['predicted_price']}")
-        st.info("Prediction based on pages, rating, and popularity")
-    else:
-        st.error("Backend error")
+    except:
+        st.error("Cannot connect to API")

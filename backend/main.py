@@ -3,18 +3,18 @@ import joblib
 import numpy as np
 from pydantic import BaseModel
 
-# 🔹 Create app FIRST
+
 app = FastAPI()
 
-# ✅ ADD THIS HERE 👇
+# Load model
+model = joblib.load("model/model.pkl")
+
+# Root route
 @app.get("/")
 def home():
     return {"message": "API is running"}
 
-# 🔹 Load model
-model = joblib.load("model/model.pkl")
-
-# 🔹 Input schema
+# Input schema
 class Book(BaseModel):
     title: str
     author: str
@@ -22,7 +22,7 @@ class Book(BaseModel):
     popularity: float
     pages: int
 
-# 🔹 Prediction API
+# Prediction API
 @app.post("/predict")
 def predict(book: Book):
 
