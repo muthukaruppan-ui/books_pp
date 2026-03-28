@@ -3,10 +3,18 @@ import joblib
 import numpy as np
 from pydantic import BaseModel
 
+# 🔹 Create app FIRST
 app = FastAPI()
 
+# ✅ ADD THIS HERE 👇
+@app.get("/")
+def home():
+    return {"message": "API is running"}
+
+# 🔹 Load model
 model = joblib.load("model/model.pkl")
 
+# 🔹 Input schema
 class Book(BaseModel):
     title: str
     author: str
@@ -14,24 +22,15 @@ class Book(BaseModel):
     popularity: float
     pages: int
 
+# 🔹 Prediction API
 @app.post("/predict")
 def predict(book: Book):
 
     X = np.array([[book.pages, book.rating, book.popularity]])
 
-    # Main prediction
     price_log = model.predict(X)[0]
     price = np.expm1(price_log)
 
-    # 🔥 Confidence (based on tree variance)
-    preds = []
-    for tree in model.estimators_:
-        preds.append(np.expm1(tree.predict(X)[0]))
-
-    confidence = max(0, 100 - np.std(preds))  # lower std = higher confidence
-    confidence = round(min(confidence, 100), 2)
-
     return {
-        "predicted_price": round(float(price), 2),
-        "confidence": confidence
+        "predicted_price": round(float(price), 2)
     }
