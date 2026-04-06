@@ -1,36 +1,30 @@
 from fastapi import FastAPI
 import joblib
-import numpy as np
 from pydantic import BaseModel
-
+import os
 
 app = FastAPI()
 
 # Load model
-model = joblib.load("model/model.pkl")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+model = joblib.load(os.path.join(BASE_DIR, "../model/model.pkl"))
 
-# Root route
 @app.get("/")
 def home():
     return {"message": "API is running"}
 
-# Input schema
 class Book(BaseModel):
     title: str
     author: str
     rating: float
-    popularity: float
     pages: int
+    popularity: float
 
-# Prediction API
 @app.post("/predict")
 def predict(book: Book):
 
-    X = np.array([[book.pages, book.rating, book.popularity]])
+    X = [[book.rating, book.pages, book.popularity]]
 
-    price_log = model.predict(X)[0]
-    price = np.expm1(price_log)
+    price = model.predict(X)[0]
 
-    return {
-        "predicted_price": round(float(price), 2)
-    }
+    return {"predicted_price": round(float(price), 2)}
